@@ -6,7 +6,8 @@
 <title>Birthday Surprise</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
-
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
 <style>
 
 /* RESET */
@@ -20,7 +21,7 @@
 html,body{
     width:100%;
     overflow-x:hidden;
-    scroll-behavior:smooth;
+    scroll-behavior:auto;
 }
 
 body{
@@ -106,10 +107,11 @@ h1{
 
 .floating-emojis span{
     position:absolute;
-    bottom:-120px; /* START BELOW SCREEN */
+    bottom:-120px;
     font-size:28px;
     opacity:0;
     animation:emojiFloat 12s linear infinite;
+    will-change: transform;
 }
 
 /* POSITIONS */
@@ -142,6 +144,10 @@ h1{
 .floating-emojis span:nth-child(6){
     left:92%;
     animation-delay:10s;
+}
+
+.floating-emojis span{
+    will-change: transform;
 }
 
 /* ANIMATION */
@@ -714,10 +720,9 @@ document.addEventListener("keydown", startMusic, { once:true });
         Our Beautiful Memories
     </h2>
 
-    <button class="memory-btn">
-        Start the Celebration ✨
-    </button>
-
+    <button class="memory-btn" onclick="startAgain()">
+    Special Message  💌
+</button>
     <div class="gallery">
 
         <div class="photo-card">
@@ -873,12 +878,17 @@ setInterval(createHeart,300);
 /* BUTTON */
 
 function start(){
-
-    document.getElementById("section2").scrollIntoView({
-        behavior:"smooth"
+    lenis.scrollTo("#section2", {
+        duration: 1.5,
+        easing: (t) => 1 - Math.pow(1 - t, 3)
+    });
+} 
+function startAgain(){
+    lenis.scrollTo("#section3", {
+        duration: 1.6,
+        easing: (t) => 1 - Math.pow(1 - t, 3)
     });
 }
-
 /* IMAGE POPUP */
 
 const popup = document.getElementById("popup");
@@ -923,7 +933,58 @@ window.addEventListener("scroll",()=>{
     }
 });
 
-</script>
+/* GSAP + LENIS SMOOTH SCROLL ENGINE */
 
+const lenis = new Lenis({
+    duration: 1.2,
+    smooth: true,
+    smoothTouch: true
+});
+
+function raf(time){
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+/* Sync with GSAP */
+gsap.ticker.add((time)=>{
+    lenis.raf(time * 1000);
+});
+
+gsap.ticker.lagSmoothing(0);
+
+const emojis = document.querySelectorAll(".floating-emojis span");
+const heartsBg = document.querySelectorAll(".heart-bg span");
+
+function parallaxEffect(){
+
+    const scrollY = lenis.scroll || window.scrollY;
+
+    emojis.forEach((el, i) => {
+        const speed = 0.1 + (i * 0.02);
+
+        gsap.to(el, {
+            y: scrollY * speed,
+            duration: 0.5,
+            ease: "power2.out"
+        });
+    });
+
+    heartsBg.forEach((el, i) => {
+        const speed = 0.1 + (i * 0.03);
+
+        gsap.to(el, {
+            y: scrollY * speed,
+            duration: 0.5,
+            ease: "power2.out"
+        });
+    });
+
+    requestAnimationFrame(parallaxEffect);
+}
+
+parallaxEffect();
+</script>
 </body>
 </html>
